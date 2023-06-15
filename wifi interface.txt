@@ -1,0 +1,63 @@
+AS
+                declare @Roomno varchar(50);
+                declare @Regno varchar(50);
+                declare @Deptdate datetime;
+                declare @maxid int;
+                declare @gstname varchar(100);
+                declare @pax int;
+                declare @serialno int;
+               
+              
+          
+              
+                        select @Regno=i.amdgststay2reg from inserted i;  
+                        select @Deptdate=i.newdepdte from inserted i;    
+              
+                select @Roomno= roomno from trforeggst  where gst2reg=@Regno;
+                select @gstname= firstname from trforeggst  where gst2reg=@Regno;
+                select @pax= sum(pax) from trforeggst  where roomno=@Roomno;
+                select @serialno= srlno from trforeggst  where gst2reg=@Regno;
+                 select @maxid= isnull(max(check_in_log_id),1) from hotspot..check_in_log
+         
+ 
+if(@serialno=1)
+
+           insert into hotspot.. check_in_log
+           (check_in_log_id,room_id,room_no,first_name,last_name,check_in_type,read_status,update_dt,post_dt,mobile,depdate,pax)
+            select @maxid+1,@Regno,@Roomno,substring(@gstname,1,4),'','Room Extend',1,getdate(),getdate(),'',@Deptdate,@pax
+
+GO
+=============================================================================================
+
+4. extra Pax Added
+
+USE [fom]
+GO
+
+/****** Object:  Trigger [dbo].[wifipax]    Script Date: 6/27/2018 6:53:37 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+create TRIGGER [dbo].[wifipax] ON [dbo].[trforeggst]
+  For INSERT
+AS
+                declare @Roomno varchar(50);
+                declare @Regno varchar(50);
+                declare @pax int;
+              
+          
+              
+                select @Roomno=i.roomno from inserted i;  
+                select @Regno= gst2reg from trforeggst  where roomno=@Roomno and srlno=1;
+                select @pax= sum(pax) from trforeggst  where roomno=@Roomno;
+
+update hotspot..check_in_log set pax=@pax where room_no=@Roomno and check_in_type='check_in'
+       
+GO
+
+ 
+
+ 
