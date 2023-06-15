@@ -1,3 +1,214 @@
+Dear Team,
+
+Greetings of the day!!!!!
+
+Kindly Find the below WIFI interface Scripts & Trigger for WIFISPOT Vendor (Wifi - Hotspot)
+(Anandha inn,Orchid pune,CAG,Grand Hotel D'Europe,Dravider Inn)
+
+Vendor Asking any Details about our database means pls refer this below points
+
+kindly find the commercial details about hostspot interface
+
+As per below mail request,Please find the hostspot interface below details
+
+1. Server IP (the one you have provided below 192.168.1.1 is the server IP?)
+    
+Server IP address is : 192.168.1.55
+Serve Name              : SERVER
+
+2. What is the port number to access the database
+
+The SQL port Number is : 1433
+
+3. For posting charges in which table we need to write and what information we should provide like Room number, registration id or user id etc)
+ 
+we are given the database details as you are request,kindly  you have to update the posting charges details for below database table.
+
+Login Detail           : hms
+Login Password    : hms
+Data Base Name   : HOTSPOT
+Data Base Table Name :Check_in_log
+
+4. How do I conclude the posting charges I have done is accepted and taken by the software, is there any flag i need to go and read one more time
+
+We have update the status changes once to get posted in the room, after will change the status 0 instated of 1
+
+5. How to take-care of room swap?
+
+if the room change or swab for new rooms ,we will update same for as activated room.
+
+===================================================
+
+
+USE [hotspot]
+GO
+
+
+/****** Object:  Table [dbo].[check_in_log]    Script Date: 25-Jul-19 11:05:48 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[check_in_log](
+    [check_in_log_id] [int] not NULL,
+    [room_id] [int] NULL,
+    [room_no] [varchar](12) NULL,
+    [first_name] [varchar](32) NULL,
+    [last_name] [varchar](32) NULL,
+    [check_in_type] [varchar](10) NULL,
+    [read_status] [tinyint] NULL,
+    [update_dt] [datetime] NULL,
+    [post_dt] [datetime] NULL,
+    [mobile] [varchar](50) NULL,
+    [depdate] [datetime] NULL,
+    [pax] [int] NULL
+ CONSTRAINT [PK_check_in_log] PRIMARY KEY CLUSTERED
+(
+    [check_in_log_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+=========================
+
+insert one row for log-id purpose    ---check_in_log   table
+---insert into check_in_log values('1',104,104,'TAMIL','TEST','check_in',0,'2019-12-13 15:10:30.373','2019-12-13 15:10:30.373','9940054705','2019-12-14 12:00:00.000',2)
+
+=================================
+USE [hotspot]
+GO
+
+/****** Object:  Table [dbo].[checkout_report]    Script Date: 12/13/2019 14:16:12 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[checkout_report](
+    [Bill_no] [bigint] NULL,
+    [Room_no] [varchar](50) NULL,
+    [Scheme_Name] [varchar](50) NULL,
+    [Amount] [decimal](18, 0) NULL,
+    [Buy_Date] [datetime] NULL,
+    [macid] [varchar](50) NULL,
+    [read_status] [tinyint] NULL
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+=======================
+1. Wifi
+ 
+ 
+ 
+CREATE TRIGGER [dbo].[wifi] ON [dbo].[trfotelcico]     
+  For INSERT     
+AS     
+                declare @Roomno varchar(50);     
+                declare @Extno varchar(50);     
+                declare @gstname varchar(50);     
+                declare @func varchar(50)     
+                declare @maxid int;     
+                declare @regno int;     
+                declare @depdate datetime;  
+                declare @pax int;  
+                    
+                
+                    
+                select @Roomno=i.roomno from inserted i;        
+                select @Extno=i.Extno from inserted i;          
+                select @gstname=i.gstname from inserted i;     
+                select @func=i.func from inserted i;     
+                select @regno=i.telcico2reg from inserted i;     
+                select @depdate= (depdate) from trforeggst  where gst2reg=@regno;     
+                select @maxid= max(check_in_log_id) from hotspot..check_in_log ;    
+                select @pax= sum(pax) from trforeggst  where roomno=@Roomno;
+                  
+                  
+if(@func='A')     
+                         
+    insert into hotspot.. check_in_log     
+    (check_in_log_id,room_id,room_no,first_name,last_name,check_in_type,read_status,update_dt,post_dt,mobile,depdate,pax)     
+        select @maxid+1,@extno,@Roomno,substring(@gstname,1,4),'','check_in',0,getdate(),getdate(),'',@depdate ,@pax    
+                        
+                        
+if(@func='D')     
+                    
+                                    
+        insert into hotspot.. check_in_log     
+        (check_in_log_id,room_id,room_no,first_name,last_name,check_in_type,read_status,update_dt,post_dt,mobile,depdate,Pax)     
+        select @maxid+1,@extno,@Roomno,substring(@gstname,1,4),'','check_out',0,getdate(),getdate(),'',@depdate ,@pax    
+ 
+    
+    ================================================================================================
+
+2.Sms
+ 
+ 
+create TRIGGER [dbo].[sms] ON [dbo].[trfotelcico] 
+  For INSERT 
+AS 
+                declare @Roomno varchar(50); 
+                declare @gstname varchar(50); 
+                declare @func varchar(50) 
+                declare @maxid int; 
+                declare @regno int; 
+                declare @mobile varchar(50) 
+                
+            
+                
+                select @Roomno=i.roomno from inserted i;    
+                select @gstname=i.gstname from inserted i; 
+                select @func=i.func from inserted i; 
+                select @regno=i.telcico2reg from inserted i;
+                select @maxid= max(nxtnum) from hms..admparsmscnt where field='sms'; 
+                select @mobile= isnull(mobile,'') from trforeggst  where gst2reg=@regno; 
+
+if(@mobile!='')
+ 
+if(@func='A')
+  
+update hms..admparsmscnt set nxtnum=nxtnum+1 where field='sms'; 
+                   if(@mobile!='')   
+                      if(@func='A')      
+  
+                            insert into newhms.. admparsmsdtl 
+                                    (objid,modcode,type,operation,opt,refno,name,number,message,status,priority,time2send,cby,con,isprivate,hideflag,date2send) 
+                                    select  @maxid,'FOM','GSTMSG','WIFI','WIFI','',@gstname,@mobile,+'Dear ' + @gstname+' Welcome to Land Mark Pallva Beach Resort. We wish you a pleasant stay with us.Your WIFI USERID:'+@Roomno+' PWD:'+substring(@gstname,1,4),1,1,'','FOURD',getdate(),0,'','' 
+                 
+        
+ =================================================================================================================
+
+3. Amendment room extend
+
+
+/****** Object:  Trigger [dbo].[wifiext]    Script Date: 6/27/2018 6:56:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+create TRIGGER [dbo].[wifiext] ON [dbo].[trfoamdgststay]
+  For INSERT
 AS
                 declare @Roomno varchar(50);
                 declare @Regno varchar(50);
@@ -57,7 +268,3 @@ AS
 update hotspot..check_in_log set pax=@pax where room_no=@Roomno and check_in_type='check_in'
        
 GO
-
- 
-
- 
